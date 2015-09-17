@@ -1,5 +1,9 @@
 /*! HTML5 Boilerplate v5.2.0 | MIT License | https://html5boilerplate.com/ */
 
+*{
+    margin: 0;
+    padding: 0;
+}
 /*
  * What follows is the result of much research on cross-browser styling.
  * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
@@ -13,7 +17,7 @@
 html {
     color: #222;
     font-size: 1em;
-    line-height: 1.4;
+    line-height: 0;
 }
 
 /*
@@ -96,10 +100,25 @@ textarea {
    ========================================================================== */
 
 
+.cube{
+    display: inline-block;
+    border: 1px black solid;
+    width: 5px;
+    height: 5px;
+}
 
-
-
-
+.good .cube{
+    background-color: lightgreen;
+}
+.system .cube {
+    background-color: lightcoral;
+}
+.bad .cube {
+    background-color: lightskyblue;
+}
+.empty .cube {
+    background-color: black;
+}
 
 
 
