@@ -18,6 +18,7 @@ html {
     color: #222;
     font-size: 1em;
     line-height: 0;
+    background-color: black;
 }
 
 /*
@@ -107,19 +108,20 @@ textarea {
     height: 5px;
 }
 
-.good .cube{
+.cube.good{
     background-color: lightgreen;
 }
-.system .cube {
+.cube.system{
     background-color: lightcoral;
 }
-.bad .cube {
+.bad.cube {
     background-color: lightskyblue;
 }
-.empty .cube {
-    background-color: black;
+/*
+.empty.cube {
+    background-color: transparent;
 }
-
+*/
 
 
 
