@@ -84,10 +84,21 @@ function showMsg(m) {
 $(function () {
     showMsg("Initializing");
     var mainDiv = $('#main');
+    var elem = mainDiv;
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    }
     //7px cubes
     var screenWidth = $(window).width();
     var screenHeight = $(window).height();
-    var parts = Math.floor(screenWidth / 7) * Math.floor(screenHeight / 7);
+    var size = 4;
+    var parts = Math.floor(screenWidth / size) * Math.floor(screenHeight / size);
     var sectorCounter = 0;
     var i = 0;
     var badCubes = 0;
@@ -131,19 +142,19 @@ $(function () {
 
 function defrag() {
     var buffer = 10;
-    var delay = 10;
+    var delay = 2;
     var timer = 1;
-    var indexOfLastGoodItem = -1;
     var source = [];
     var target = [];
     var complete = true;
+    var numberOfItems = 0;
     $(cubes).each(function (index, el) {
-        if (el.type === 0) {
-            indexOfLastGoodItem = index;
+        if (el.type === 0 || el.type === 1) {
+            numberOfItems++;
         }
     });
     // we fill out the empty spaces
-    for (var i = 0; i < indexOfLastGoodItem; i++) {
+    for (var i = 0; i < numberOfItems; i++) {
         if (cubes[i].type === 3) {
             target.push(cubes[i]);
         }
@@ -213,19 +224,19 @@ function defrag() {
 
 function moveBadItemsToEnd() {
     //first we move bad items to make space for good ones
-    var indexOfLastGoodItem = -1;
+    var numberOfItems = 0;
     $(cubes).each(function (index, el) {
-        if (el.type === 0) {
-            indexOfLastGoodItem = index;
+        if (el.type === 0 || el.type === 1) {
+            numberOfItems++;
         }
-    });    
+    });
     var source = [];
     var target = [];
     var complete = true;
     var timer = 1;
-    var delay = 10;
+    var delay = 2;
     var buffer = 10;
-    for (var i = 0; i < indexOfLastGoodItem+buffer; i++) {
+    for (var i = 0; i < numberOfItems; i++) {
         if (cubes[i].type === 1) {//bad
             target.push(cubes[i]);
         }
@@ -241,7 +252,7 @@ function moveBadItemsToEnd() {
             break;
         }
     }
-    if(Math.abs(i - j) >= (buffer * 2)){
+    if (Math.abs(i - j) >= (buffer * 2)) {
         for (var k = 0; k < source.length; k++) {
             delayMarkAsBad(source[k], timer * delay);
             delayMarkAsEmpty(target[k], timer * delay);
@@ -250,7 +261,7 @@ function moveBadItemsToEnd() {
         if (source.length > 0) {
             complete = false;
         }
-    }else{
+    } else {
         complete = true;
     }
 
@@ -264,83 +275,3 @@ function moveBadItemsToEnd() {
         }, timer++ * delay);
     }
 }
-
-/*
- function defrag() {
- var badSector = [];
- var emptySector = [];
- var systemSector = [];
- var lastType = cubes[0].type;
- var sector = [];
- var lastGoodCube = 0;
- $(cubes).each(function (index, value) {
- if (value.type !== lastType) {
- if (value.type == 0) {
- lastType = value.type;
- if(value.index > lastGoodCube){
- lastGoodCube = value.index;
- }
- //ignore the good sectors
- return;
- }
- //we save the current sector
- switch (lastType) {
- case 1:
- {
- badSector.push(sector);
- break;
- }
- case 2:
- {
- systemSector.push(sector);
- break;
- }
- case 3:
- {
- emptySector.push(sector);
- break;
- }
- }
- ;
- //create a new sector
- sector = [];
- }
- sector.push(value);
- lastType = value.type;
- });
- 
- var newEmptySectors = [];
- var indexesToRemove = [];
- //replace empty with bad sectors
- $(emptySector).each(function(index, sector){
- var currentSize = sector.length;
- var badSectorIndex = -1;
- if(sector[0].index < lastGoodCube){
- //find bad sector with the same size
- var badSectorToReplace = $(badSector).filter(function(index, el){
- return el.length === currentSize;
- })[0];
- if(badSectorToReplace){
- //change bad to empty
- $(badSectorToReplace).each(function(i, cube){
- delayMarkAsEmpty(cube, 300+300*index);
- //                    markAsEmpty(cube);
- });
- //remove from bad array
- badSector = $.grep(badSector, function(el, index){
- return el !== badSectorToReplace;
- });
- //change empty to good
- $(sector).each(function(i, cube){
- delayMarkAsGood(cube, 300+300*index);
- //                    markAsGood(cube);
- });
- indexesToRemove.push(index);
- newEmptySectors.push(badSectorToReplace);
- }
- }
- });
- 
- alert("test");
- }
- */

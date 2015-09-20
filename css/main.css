@@ -115,8 +115,8 @@ textarea {
     float: left;
     display: inline-block;
     border: 1px black solid;
-    width: 5px;
-    height: 5px;
+    width: 2px;
+    height: 2px;
 }
 
 .cube.good{
