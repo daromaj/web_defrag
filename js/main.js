@@ -1,12 +1,88 @@
 var cubes = [];
 var types = ["good", "bad", "system", "empty"];
-function markAsGood(c) {
+function markAs(c, type) {
     var el = $("#" + c.id);
-    el.removeClass("bad");
-    el.addClass("good");
-    c.type = 0;
+    //console.log("marked as good: " + c.id);
+    $.each(types, function (index, name) {
+        el.removeClass(name);
+    });
+    el.addClass(types[type]);
+    c.type = type;
 }
+function markAsGood(c) {
+    markAs(c, 0);
+}
+function markAsEmpty(c) {
+    markAs(c, 3);
+}
+function markAsSystem(c) {
+    markAs(c, 2);
+}
+function markAsBad(c) {
+    markAs(c, 1);
+}
+
+function randomizeBadQubes(badCubes, callback) {
+    var chances = 2;
+    var markIt = Math.floor(Math.random() * chances);
+    var delay = 1;
+
+    //some of the bad cubes can be marked as good
+    for (var i = 0; i < badCubes; i++) {
+        if (cubes[i].type === 1) {
+            if (markIt > 0) {
+                delayMarkAsGood(cubes[i], delay * i);
+            }
+        } else {
+            markIt = Math.floor(Math.random() * chances);
+        }
+        if ((badCubes - 1) === i) {
+            setTimeout(function () {
+                showMsg("Analysis complete.");
+                showMsg("Defragmenting...");
+                callback.call();
+            }, (delay * i + 100));
+        }
+    }
+}
+
+function delayMarkAsGood(cube, t) {
+    setTimeout(function () {
+        markAsGood(cube);
+    }, t);
+}
+function delayMarkAsEmpty(cube, t) {
+    setTimeout(function () {
+        markAsEmpty(cube);
+    }, t);
+}
+function delayMarkAsSystem(cube, t) {
+    setTimeout(function () {
+        markAsSystem(cube);
+    }, t);
+}
+function delayMarkAsBad(cube, t) {
+    setTimeout(function () {
+        markAsBad(cube);
+    }, t);
+}
+
+
+function showMsg(m) {
+
+    var d = $("<div class='popupmsg' style='display:none;'></div>").appendTo($("#wrapper"));
+    d.html(m);
+    d.show("slow", function () {
+        setTimeout(function () {
+            d.hide("slow", function () {
+                d.remove();
+            });
+        }, 3000);
+    });
+}
+
 $(function () {
+    showMsg("Initializing");
     var mainDiv = $('#main');
     //7px cubes
     var screenWidth = $(window).width();
@@ -43,15 +119,228 @@ $(function () {
         i += sectorSize;
         sectorCounter++;
     }
-    //some of the bad cubes can be marked as good
-    for (var i = 0; i < badCubes; i++) {
-        if (cubes[i].type === 1) {
-            setTimeout(function () {
-                markAsGood(cubes[i]);
-            }, 100 * i);
-        }
-    }
-    //screen ready
-    //simple find and replace
+
+    showMsg("Analyzing...");
+
+    setTimeout(function () {
+        randomizeBadQubes(badCubes, moveBadItemsToEnd);
+    }, 1000);
+
+
 });
 
+function defrag() {
+    var buffer = 10;
+    var delay = 10;
+    var timer = 1;
+    var indexOfLastGoodItem = -1;
+    var source = [];
+    var target = [];
+    var complete = true;
+    $(cubes).each(function (index, el) {
+        if (el.type === 0) {
+            indexOfLastGoodItem = index;
+        }
+    });
+    // we fill out the empty spaces
+    for (var i = 0; i < indexOfLastGoodItem; i++) {
+        if (cubes[i].type === 3) {
+            target.push(cubes[i]);
+        }
+        if (target.length >= buffer) {
+            break;
+        }
+    }
+    for (var i = cubes.length - 1; i >= 0; i--) {
+        if (cubes[i].type === 1) {
+            source.push(cubes[i]);
+        }
+        if (source.length >= target.length) {
+            break;
+        }
+    }
+    for (var i = 0; i < source.length; i++) {
+        delayMarkAsEmpty(source[i], timer * delay);
+        delayMarkAsGood(target[i], timer * delay);
+    }
+    timer++;
+    if (source.length > 0) {
+        complete = false;
+    }
+
+    //then we move the error elements to the end
+    if (complete) {
+        source = [];
+        target = [];
+        for (var i = 0; i < cubes.length; i++) {
+            if (cubes[i].type === 2) {//system
+                target.push(cubes[i]);
+            }
+            if (target.length >= buffer) {
+                break;
+            }
+        }
+        for (var j = cubes.length - 1; j >= 0; j--) {
+            if (cubes[j].type === 3) {//empty
+                source.push(cubes[j]);
+            }
+            if (source.length >= target.length) {
+                break;
+            }
+        }
+        if (Math.abs(i - j) >= (buffer * 2)) {
+            for (var k = 0; k < source.length; k++) {
+                delayMarkAsSystem(source[k], timer * delay);
+                delayMarkAsEmpty(target[k], timer * delay);
+            }
+            timer++;
+            if (source.length > 0) {
+                complete = false;
+            }
+        } else {
+            complete = true;
+        }
+    }
+
+    if (complete) {
+        showMsg("Complete");
+    } else {
+        setTimeout(function () {
+            defrag();
+        }, timer++ * delay);
+    }
+}
+
+function moveBadItemsToEnd() {
+    //first we move bad items to make space for good ones
+    var indexOfLastGoodItem = -1;
+    $(cubes).each(function (index, el) {
+        if (el.type === 0) {
+            indexOfLastGoodItem = index;
+        }
+    });    
+    var source = [];
+    var target = [];
+    var complete = true;
+    var timer = 1;
+    var delay = 10;
+    var buffer = 10;
+    for (var i = 0; i < indexOfLastGoodItem+buffer; i++) {
+        if (cubes[i].type === 1) {//bad
+            target.push(cubes[i]);
+        }
+        if (target.length >= buffer) {
+            break;
+        }
+    }
+    for (var j = cubes.length - 1; j >= 0; j--) {
+        if (cubes[j].type === 3) {//empty
+            source.push(cubes[j]);
+        }
+        if (source.length >= target.length) {
+            break;
+        }
+    }
+    if(Math.abs(i - j) >= (buffer * 2)){
+        for (var k = 0; k < source.length; k++) {
+            delayMarkAsBad(source[k], timer * delay);
+            delayMarkAsEmpty(target[k], timer * delay);
+        }
+        timer++;
+        if (source.length > 0) {
+            complete = false;
+        }
+    }else{
+        complete = true;
+    }
+
+    if (complete) {
+        setTimeout(function () {
+            defrag();
+        }, timer++ * delay);
+    } else {
+        setTimeout(function () {
+            moveBadItemsToEnd();
+        }, timer++ * delay);
+    }
+}
+
+/*
+ function defrag() {
+ var badSector = [];
+ var emptySector = [];
+ var systemSector = [];
+ var lastType = cubes[0].type;
+ var sector = [];
+ var lastGoodCube = 0;
+ $(cubes).each(function (index, value) {
+ if (value.type !== lastType) {
+ if (value.type == 0) {
+ lastType = value.type;
+ if(value.index > lastGoodCube){
+ lastGoodCube = value.index;
+ }
+ //ignore the good sectors
+ return;
+ }
+ //we save the current sector
+ switch (lastType) {
+ case 1:
+ {
+ badSector.push(sector);
+ break;
+ }
+ case 2:
+ {
+ systemSector.push(sector);
+ break;
+ }
+ case 3:
+ {
+ emptySector.push(sector);
+ break;
+ }
+ }
+ ;
+ //create a new sector
+ sector = [];
+ }
+ sector.push(value);
+ lastType = value.type;
+ });
+ 
+ var newEmptySectors = [];
+ var indexesToRemove = [];
+ //replace empty with bad sectors
+ $(emptySector).each(function(index, sector){
+ var currentSize = sector.length;
+ var badSectorIndex = -1;
+ if(sector[0].index < lastGoodCube){
+ //find bad sector with the same size
+ var badSectorToReplace = $(badSector).filter(function(index, el){
+ return el.length === currentSize;
+ })[0];
+ if(badSectorToReplace){
+ //change bad to empty
+ $(badSectorToReplace).each(function(i, cube){
+ delayMarkAsEmpty(cube, 300+300*index);
+ //                    markAsEmpty(cube);
+ });
+ //remove from bad array
+ badSector = $.grep(badSector, function(el, index){
+ return el !== badSectorToReplace;
+ });
+ //change empty to good
+ $(sector).each(function(i, cube){
+ delayMarkAsGood(cube, 300+300*index);
+ //                    markAsGood(cube);
+ });
+ indexesToRemove.push(index);
+ newEmptySectors.push(badSectorToReplace);
+ }
+ }
+ });
+ 
+ alert("test");
+ }
+ */

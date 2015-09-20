@@ -17,7 +17,7 @@
 html {
     color: #222;
     font-size: 1em;
-    line-height: 0;
+    /* line-height: 0; */
     background-color: black;
 }
 
@@ -100,8 +100,19 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+.popupmsg{
+    background-color: white;
+    line-height: normal;
+    padding: 20px;
+}
+
+#wrapper{
+    position: absolute;
+    right: 0;
+}
 
 .cube{
+    float: left;
     display: inline-block;
     border: 1px black solid;
     width: 5px;
@@ -217,9 +228,9 @@ textarea {
 }
 
 @media print,
-       (-webkit-min-device-pixel-ratio: 1.25),
-       (min-resolution: 1.25dppx),
-       (min-resolution: 120dpi) {
+(-webkit-min-device-pixel-ratio: 1.25),
+(min-resolution: 1.25dppx),
+(min-resolution: 120dpi) {
     /* Style adjustments for high resolution devices */
 }
 
