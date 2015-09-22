@@ -120,10 +120,10 @@ textarea {
 }
 
 .cube.good{
-    background-color: lightgreen;
+    background-color:  lawngreen;
 }
 .cube.system{
-    background-color: lightcoral;
+    background-color: red;
 }
 .bad.cube {
     background-color: lightskyblue;

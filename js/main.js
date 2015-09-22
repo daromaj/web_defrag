@@ -1,5 +1,6 @@
 var cubes = [];
 var types = ["good", "bad", "system", "empty"];
+var numberOfGoodBadItems = 0;
 function markAs(c, type) {
     var el = $("#" + c.id);
     //console.log("marked as good: " + c.id);
@@ -103,12 +104,8 @@ $(function () {
     var i = 0;
     var badCubes = 0;
     var systemCubes = 0;
-    var emptyCubes = 0;
     while (i < parts) {
-//        $(mainDiv).append("<span id='sector" + sectorCounter + "'></span");
-//        var sector = $("#sector" + sectorCounter);
         var classType = Math.floor(Math.random() * 3) + 1;
-//        sector.addClass(types[classType]);
         var sectorSize = ((parts - i) > 10) ? Math.floor((Math.random() * 10) + 1) : (parts - i);
         for (var j = 0; j < sectorSize; j++) {
             var id = "part" + (i + j);
@@ -147,14 +144,8 @@ function defrag() {
     var source = [];
     var target = [];
     var complete = true;
-    var numberOfItems = 0;
-    $(cubes).each(function (index, el) {
-        if (el.type === 0 || el.type === 1) {
-            numberOfItems++;
-        }
-    });
     // we fill out the empty spaces
-    for (var i = 0; i < numberOfItems; i++) {
+    for (var i = 0; i < numberOfGoodBadItems; i++) {
         if (cubes[i].type === 3) {
             target.push(cubes[i]);
         }
@@ -223,20 +214,21 @@ function defrag() {
 }
 
 function moveBadItemsToEnd() {
+    if (numberOfGoodBadItems === 0) {
+        $(cubes).each(function (index, el) {
+            if (el.type === 0 || el.type === 1) {
+                numberOfGoodBadItems++;
+            }
+        });
+    }
     //first we move bad items to make space for good ones
-    var numberOfItems = 0;
-    $(cubes).each(function (index, el) {
-        if (el.type === 0 || el.type === 1) {
-            numberOfItems++;
-        }
-    });
     var source = [];
     var target = [];
     var complete = true;
     var timer = 1;
     var delay = 2;
     var buffer = 10;
-    for (var i = 0; i < numberOfItems; i++) {
+    for (var i = 0; i < numberOfGoodBadItems; i++) {
         if (cubes[i].type === 1) {//bad
             target.push(cubes[i]);
         }
